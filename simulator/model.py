@@ -29,7 +29,9 @@ class Airline(Agent):
         self.tick_count += 1
 
         if self.verbose:
-            print(f"plane {self.unique_id}: {self.is_at_stand} for {self.time_at_stand}")
+            print(
+                f"plane {self.unique_id}: {self.is_at_stand} for {self.time_at_stand}"
+            )
         if self.is_at_stand:
             # TODO this isn't super efficient to do this every step
             self.model.add_plane_to_stand(self)
@@ -115,9 +117,9 @@ class Stand(object):
 
 
 class AirportModel(Model):
-    def __init__(self, n, width=20, height=20, verbose=True):
+    def __init__(self, width=20, height=20, verbose=False):
         # TODO probability of adding plane on a tick
-        self.number_planes = n
+        super().__init__()
         self.width = width
         self.max_plane_id = 0
         self.verbose = verbose
@@ -140,7 +142,7 @@ class AirportModel(Model):
             # TODO planes served
             # TODO planes queued
             # TODO queue duration
-            model_reporters={"number_planes": "number_planes", },
+            model_reporters={"number_planes": "number_planes"},
             agent_reporters={
                 "tick_count": "tick_count",
                 "x": "x_position",
@@ -159,7 +161,7 @@ class AirportModel(Model):
         self.grid.place_agent(plane, (middle_x, 0))
 
     def step(self):
-        if random.random() >= 0.7:
+        if random.random() >= 0.1:
             self.add_plane()
 
         self.datacollector.collect(self)
@@ -176,8 +178,9 @@ class AirportModel(Model):
         for id, stand in self.stands.items():
             if plane.pos == stand.position:
                 self.stands[id].is_occupied = True
-                print(f"Plane {plane.unique_id} docked at stand {id}")
-                print(self.stands)
+                if self.verbose:
+                    print(f"Plane {plane.unique_id} docked at stand {id}")
+                    print(self.stands)
                 break
 
     def get_stands_of_type(self, airline_type):
@@ -217,7 +220,7 @@ class AirportModel(Model):
 
 
 if __name__ == "__main__":
-    airport = AirportModel(6, width=20, height=20, verbose=False)
+    airport = AirportModel(width=20, height=20, verbose=False)
     print(airport)
     for _ in range(50):
         airport.step()
