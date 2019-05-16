@@ -39,16 +39,34 @@ class Airline(Agent):
         else:
             self.move()
 
+    def get_moves_closer(self, possible_steps, target_position):
+        """Filter potential moves using manhattan distance."""
+        results = []
+        target_x, target_y = target_position
+
+        current_delta_x = abs(target_x - self.x_position)
+        current_delta_y = abs(target_y - self.y_position)
+
+        for step in possible_steps:
+            x, y = step
+            delta_x = abs(target_x - x)
+            delta_y = abs(target_y - y)
+            if delta_x < current_delta_x or delta_y < current_delta_y:
+                results.append(step)
+
+        return results
+
     def move(self):
-        # TODO limit to non-backwards movements
-        # TODO move towards an open stand
         possible_steps = self.model.grid.get_neighborhood(
             self.pos, moore=False, include_center=False
         )
-        new_position = self.random.choice(possible_steps)
-        if self.verbose:
-            print(f"moving plane from {self.pos} to {new_position}")
-        self.model.grid.move_agent(self, new_position)
+        # TODO parameterize the target stand
+        steps_closer = self.get_moves_closer(possible_steps, (19, 16))
+        if steps_closer:
+            new_position = self.random.choice(steps_closer)
+            if self.verbose:
+                print(f"moving plane from {self.pos} to {new_position}")
+            self.model.grid.move_agent(self, new_position)
 
 
 class Stand(object):
@@ -117,8 +135,8 @@ class AirportModel(Model):
     def plot_position_history(self):
         # plot stands
         for id, stand in self.stands.items():
-            color = 'r' if stand.airline_type == 1 else 'b'
-            plt.scatter(stand.x, stand.y, marker='.', color=color)
+            color = "r" if stand.airline_type == 1 else "b"
+            plt.scatter(stand.x, stand.y, marker=".", color=color)
 
         # plot planes
         df = self.datacollector.get_agent_vars_dataframe()
@@ -134,7 +152,7 @@ class AirportModel(Model):
 
 
 if __name__ == "__main__":
-    airport = AirportModel(3, verbose=False)
+    airport = AirportModel(10, verbose=False)
     print(airport)
     for _ in range(100):
         airport.step()
