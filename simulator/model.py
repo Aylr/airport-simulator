@@ -105,6 +105,7 @@ class AirportModel(Model):
         self.schedule = RandomActivation(self)
         # TODO raise error on smallest grid
         self.grid = MultiGrid(width, height, torus=False)
+        # TODO space out stands more dynamically
         self.stands = {
             1: Stand(1, 1, 1, height - 4),
             2: Stand(2, 1, 1, height - 6),
@@ -119,8 +120,8 @@ class AirportModel(Model):
         for i in range(self.number_planes):
             plane = Airline(i, self, verbose=verbose)
             self.schedule.add(plane)
-            # TODO middle of grid
-            self.grid.place_agent(plane, (10, 0))
+            middle_x = int(width / 2)
+            self.grid.place_agent(plane, (middle_x, 0))
 
         self.datacollector = DataCollector(
             model_reporters={"number_planes": "number_planes"},
@@ -174,7 +175,7 @@ class AirportModel(Model):
 
 
 if __name__ == "__main__":
-    airport = AirportModel(10, verbose=False)
+    airport = AirportModel(10, width=50, height=40, verbose=False)
     print(airport)
     for _ in range(100):
         airport.step()
