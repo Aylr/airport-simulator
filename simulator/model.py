@@ -8,11 +8,10 @@ from mesa.space import MultiGrid
 from mesa.datacollection import DataCollector
 
 
-class AirlineOne(Agent):
-    """Airline 1 type"""
-
+class Airline(Agent):
     def __init__(self, unique_id, model, verbose=True):
         super().__init__(unique_id, model)
+        self.airline_type = random.choice([1, 2])
         self.in_line = True
         self.at_stand = False
         self.time_at_stand = random.randint(20, 30)
@@ -41,10 +40,10 @@ class AirlineOne(Agent):
             self.move()
 
     def move(self):
-        # TODO limit to non-diagonal movements
         # TODO limit to non-backwards movements
+        # TODO move towards an open stand
         possible_steps = self.model.grid.get_neighborhood(
-            self.pos, moore=True, include_center=False
+            self.pos, moore=False, include_center=False
         )
         new_position = self.random.choice(possible_steps)
         if self.verbose:
@@ -55,27 +54,39 @@ class AirlineOne(Agent):
 class Stand(object):
     """An airport stand"""
 
-    def __init__(self, unique_id):
+    def __init__(self, unique_id, airline_type, x, y):
         self.unique_id = unique_id
-        self.type_one_slots = [None, None, None]
-        self.type_two_slots = [None, None, None, None]
+        self.airline_type = airline_type
+        self.x = x
+        self.y = y
+        self.airline_slot = None
 
     def __repr__(self):
-        return f"<Stand {self.unique_id} type 1: {self.type_one_slots}, type 2: {self.type_two_slots}>"
+        return f"<Stand {self.unique_id} accepts type: {self.airline_type} slot: {self.airline_slot}>"
 
 
 class AirportModel(Model):
     def __init__(self, n, width=20, height=20, verbose=True):
         self.number_planes = n
         self.schedule = RandomActivation(self)
-        self.grid = MultiGrid(width, height, True)
-        self.stands = {i: Stand(i) for i in range(7)}
+        # TODO raise error on smallest grid
+        self.grid = MultiGrid(width, height, torus=False)
+        self.stands = {
+            1: Stand(1, 1, 1, height - 4),
+            2: Stand(2, 1, 1, height - 6),
+            3: Stand(3, 1, 1, height - 8),
+            4: Stand(4, 2, width - 1, height - 4),
+            5: Stand(5, 2, width - 1, height - 6),
+            6: Stand(6, 2, width - 1, height - 8),
+            7: Stand(7, 2, width - 1, height - 10),
+        }
 
         # create planes
         for i in range(self.number_planes):
-            plane = AirlineOne(i, self, verbose=verbose)
+            plane = Airline(i, self, verbose=verbose)
             self.schedule.add(plane)
-            self.grid.place_agent(plane, (0, 0))
+            # TODO middle of grid
+            self.grid.place_agent(plane, (10, 0))
 
         self.datacollector = DataCollector(
             model_reporters={"number_planes": "number_planes"},
@@ -104,6 +115,12 @@ class AirportModel(Model):
         plt.show()
 
     def plot_position_history(self):
+        # plot stands
+        for id, stand in self.stands.items():
+            color = 'r' if stand.airline_type == 1 else 'b'
+            plt.scatter(stand.x, stand.y, marker='.', color=color)
+
+        # plot planes
         df = self.datacollector.get_agent_vars_dataframe()
         df.reset_index(inplace=True)
 
@@ -112,18 +129,18 @@ class AirportModel(Model):
             y = df[df.AgentID == agent].y
             plt.plot(x, y)
 
-        plt.legend(df.AgentID)
+        # plt.legend(df.AgentID)
         plt.show()
 
 
 if __name__ == "__main__":
     airport = AirportModel(3, verbose=False)
     print(airport)
-    for _ in range(25):
+    for _ in range(100):
         airport.step()
     print(f"{len(airport.schedule.agents)} planes left in stands")
     print(airport.stands)
-    airport.plot_position_history()
 
-    airport.plot_positions()
-    plt.show()
+    # airport.plot_positions()
+    airport.plot_position_history()
+    # plt.show()
