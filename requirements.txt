@@ -1,0 +1,4 @@
+# Project requirements
+mesa
+jupyterlab
+
