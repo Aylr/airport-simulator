@@ -39,29 +39,45 @@ class Airline(Agent):
         else:
             self.move()
 
-    def get_moves_closer(self, possible_steps, target_position):
+    def get_moves_closer(self, possible_steps, stand):
         """Filter potential moves using manhattan distance."""
         results = []
-        target_x, target_y = target_position
 
-        current_delta_x = abs(target_x - self.x_position)
-        current_delta_y = abs(target_y - self.y_position)
+        current_delta_x = abs(stand.x - self.x_position)
+        current_delta_y = abs(stand.y - self.y_position)
 
         for step in possible_steps:
             x, y = step
-            delta_x = abs(target_x - x)
-            delta_y = abs(target_y - y)
+            delta_x = abs(stand.x - x)
+            delta_y = abs(stand.y - y)
             if delta_x < current_delta_x or delta_y < current_delta_y:
                 results.append(step)
 
         return results
 
+    def closest_stands(self, stands):
+        if not isinstance(stands, list):
+            stands = [stands]
+        deltas = []
+        for stand in stands:
+            delta_x = abs(stand.x - self.x_position)
+            delta_y = abs(stand.y - self.y_position)
+            deltas.append(delta_x + delta_y)
+
+        min_indices = [i for i, x in enumerate(deltas) if x == min(deltas)]
+        return [stands[i] for i in min_indices]
+
     def move(self):
         possible_steps = self.model.grid.get_neighborhood(
             self.pos, moore=False, include_center=False
         )
-        # TODO parameterize the target stand
-        steps_closer = self.get_moves_closer(possible_steps, (19, 16))
+        # TODO move towards open stand
+        # TODO move towards closest open stand
+        open_stands = self.model.get_open_stands(self.airline_type)
+        closest_stands = self.closest_stands(open_stands)
+
+        picked_stand = random.choice(closest_stands)
+        steps_closer = self.get_moves_closer(possible_steps, picked_stand)
         if steps_closer:
             new_position = self.random.choice(steps_closer)
             if self.verbose:
@@ -77,10 +93,10 @@ class Stand(object):
         self.airline_type = airline_type
         self.x = x
         self.y = y
-        self.airline_slot = None
+        self.is_occupied = None
 
     def __repr__(self):
-        return f"<Stand {self.unique_id} accepts type: {self.airline_type} slot: {self.airline_slot}>"
+        return f"<Stand {self.unique_id} accepts type: {self.airline_type} slot: {self.is_occupied}>"
 
 
 class AirportModel(Model):
@@ -120,6 +136,12 @@ class AirportModel(Model):
 
     def add_plane_to_stand(self):
         pass
+
+    def get_stands_of_type(self, airline_type):
+        return [s for id, s in self.stands.items() if s.airline_type == airline_type]
+
+    def get_open_stands(self, airline_type):
+        return [s for s in self.get_stands_of_type(airline_type) if not s.is_occupied]
 
     def plot_positions(self):
         agent_counts = np.zeros((self.grid.width, self.grid.height))
