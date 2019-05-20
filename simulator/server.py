@@ -12,7 +12,7 @@ def agent_portrayal(agent):
         "Color": "red",
         "r": 0.75,
         "text": agent.unique_id,
-        "text_color": 'white'
+        "text_color": "white",
     }
 
     if agent.airline_type == 1:
