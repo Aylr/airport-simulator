@@ -61,11 +61,9 @@ class Airline(Agent):
         elif self.state == AirlineStates.AT_STAND:
             self.unloading_time_when_at_stand -= 1
 
-    def get_moves_closer(self, possible_steps, stand_dict):
+    def get_moves_closer(self, possible_steps, stand):
         """Filter potential moves using manhattan distance."""
         results = []
-        stand = stand_dict["stand"]
-
         current_delta_x = abs(stand.x - self.x_position)
         current_delta_y = abs(stand.y - self.y_position)
 
@@ -83,9 +81,8 @@ class Airline(Agent):
             stands = [stands]
         deltas = []
         for stand in stands:
-            s = stand["stand"]
-            delta_x = abs(s.x - self.x_position)
-            delta_y = abs(s.y - self.y_position)
+            delta_x = abs(stand.x - self.x_position)
+            delta_y = abs(stand.y - self.y_position)
             deltas.append(delta_x + delta_y)
 
         min_indices = [i for i, x in enumerate(deltas) if x == min(deltas)]
@@ -94,7 +91,7 @@ class Airline(Agent):
     @property
     def is_at_stand(self):
         for id, stand in self.model.stands.items():
-            if self.pos == stand["stand"].position:
+            if self.pos == stand.position:
                 return True
 
     def move(self):
@@ -119,8 +116,8 @@ class Airline(Agent):
                     print(f"moving plane from {self.pos} to {new_position}")
                 self.model.grid.move_agent(self, new_position)
 
-
 class Stand(object):
+    # TODO try making stand an agent
     """An airport stand"""
 
     def __init__(self, unique_id, airline_type, x, y):
@@ -132,7 +129,7 @@ class Stand(object):
         self.x = x
         self.y = y
         self.is_occupied = False
-        self.planes_fully_unloaded = 0
+        self.planes_unloaded = []
         # TODO does this need a notion of which plane is docked here?
 
     @property
@@ -159,41 +156,13 @@ class AirportModel(Model):
 
         # TODO space out stands more dynamically
         self.stands = {
-            1: {
-                "stand": Stand(1, 1, 1, height - 4),
-                "plane_id_at_stand": None,
-                "planes_unloaded": [],
-            },
-            2: {
-                "stand": Stand(2, 1, 1, height - 6),
-                "plane_id_at_stand": None,
-                "planes_unloaded": [],
-            },
-            3: {
-                "stand": Stand(3, 1, 1, height - 8),
-                "plane_id_at_stand": None,
-                "planes_unloaded": [],
-            },
-            4: {
-                "stand": Stand(4, 2, width - 1, height - 4),
-                "plane_id_at_stand": None,
-                "planes_unloaded": [],
-            },
-            5: {
-                "stand": Stand(5, 2, width - 1, height - 6),
-                "plane_id_at_stand": None,
-                "planes_unloaded": [],
-            },
-            6: {
-                "stand": Stand(6, 2, width - 1, height - 8),
-                "plane_id_at_stand": None,
-                "planes_unloaded": [],
-            },
-            7: {
-                "stand": Stand(7, 2, width - 1, height - 10),
-                "plane_id_at_stand": None,
-                "planes_unloaded": [],
-            },
+            1: Stand(1, 1, 1, height - 4),
+            2: Stand(2, 1, 1, height - 6),
+            3: Stand(3, 1, 1, height - 8),
+            4: Stand(4, 2, width - 1, height - 4),
+            5: Stand(5, 2, width - 1, height - 6),
+            6: Stand(6, 2, width - 1, height - 8),
+            7: Stand(7, 2, width - 1, height - 10),
         }
 
         self.datacollector = DataCollector(
@@ -254,31 +223,31 @@ class AirportModel(Model):
 
     @property
     def planes_served_at_stand_1(self):
-        return len(self.stands[1]["planes_unloaded"])
+        return len(self.stands[1].planes_unloaded)
 
     @property
     def planes_served_at_stand_2(self):
-        return len(self.stands[2]["planes_unloaded"])
+        return len(self.stands[2].planes_unloaded)
 
     @property
     def planes_served_at_stand_3(self):
-        return len(self.stands[3]["planes_unloaded"])
+        return len(self.stands[3].planes_unloaded)
 
     @property
     def planes_served_at_stand_4(self):
-        return len(self.stands[4]["planes_unloaded"])
+        return len(self.stands[4].planes_unloaded)
 
     @property
     def planes_served_at_stand_5(self):
-        return len(self.stands[5]["planes_unloaded"])
+        return len(self.stands[5].planes_unloaded)
 
     @property
     def planes_served_at_stand_6(self):
-        return len(self.stands[6]["planes_unloaded"])
+        return len(self.stands[6].planes_unloaded)
 
     @property
     def planes_served_at_stand_7(self):
-        return len(self.stands[7]["planes_unloaded"])
+        return len(self.stands[7].planes_unloaded)
 
     def release_first_plane_in_line(self):
         first_plane_ine_line = self.line[0]
@@ -341,9 +310,9 @@ class AirportModel(Model):
     def remove_plane(self, plane):
         # TODO fix all these position lookup loops
         for id, stand in self.stands.items():
-            if plane.pos == stand["stand"].position:
-                self.stands[id]["stand"].is_occupied = False
-                self.stands[id]["planes_unloaded"].append(plane.unique_id)
+            if plane.pos == stand.position:
+                self.stands[id].is_occupied = False
+                self.stands[id].planes_unloaded.append(plane.unique_id)
                 break
 
         # remove the agent from the scheduler and the grid
@@ -362,8 +331,8 @@ class AirportModel(Model):
         for id, stand in self.stands.items():
             # TODO check all planes for state changes
             for plane in self.get_active_planes_not_in_line():
-                if plane.pos == stand["stand"].position:
-                    self.stands[id]["stand"].is_occupied = True
+                if plane.pos == stand.position:
+                    self.stands[id].is_occupied = True
                     plane.state = AirlineStates.AT_STAND
 
                     if self.verbose:
@@ -374,14 +343,14 @@ class AirportModel(Model):
         return [
             s
             for id, s in self.stands.items()
-            if s["stand"].airline_type == airline_type
+            if s.airline_type == airline_type
         ]
 
     def get_open_stands(self, airline_type):
         return [
             s
             for s in self.get_stands_of_type(airline_type)
-            if not s["stand"].is_occupied
+            if not s.is_occupied
         ]
 
     def plot_positions(self):
@@ -397,8 +366,7 @@ class AirportModel(Model):
 
     def plot_position_history(self):
         # plot stands
-        for id, s in self.stands.items():
-            stand = s["stand"]
+        for id, stand in self.stands.items():
             color = "r" if stand.airline_type == 1 else "b"
             plt.scatter(stand.x, stand.y, marker=".", color=color)
 
