@@ -60,11 +60,6 @@ class Airline(Agent):
         elif self.state == AirlineStates.TAXIING_TO_STAND:
             self.move()
         elif self.state == AirlineStates.AT_STAND:
-            if self.time_at_stand <= 0:
-                # Remove the plane from the simulation
-                if self.verbose:
-                    print(f"Plane {self.unique_id} leaving stand")
-                self.model.remove_plane(self)
             self.time_at_stand -= 1
 
     def get_moves_closer(self, possible_steps, stand):
@@ -242,25 +237,40 @@ class AirportModel(Model):
         return result
 
     def step(self):
+        self.datacollector.collect(self)
+
         if random.random() >= 0.1:
             self.add_plane_to_line()
 
-        self.datacollector.collect(self)
+        self.check_planes_in_line()
+        self.check_planes_arriving_at_stands()
+        self.check_planes_at_stands()
+        self.schedule.step()
 
+    def check_planes_in_line(self):
         # check if a plane can be released from the line
         if self.can_first_plane_in_line_begin_taxiing():
             self.release_first_plane_in_line()
 
-        self.check_planes_arriving_at_stands(self)
-
-        self.schedule.step()
+    def check_planes_at_stands(self):
+        for plane in self.schedule.agents:
+            if plane.state == AirlineStates.AT_STAND:
+                if plane.time_at_stand <= 0:
+                    # Remove the plane from the simulation
+                    if self.verbose:
+                        print(f"Plane {plane.unique_id} leaving stand")
+                    self.remove_plane(plane)
 
     def remove_plane(self, plane):
         for id, stand in self.stands.items():
             if plane.pos == stand.position:
                 self.stands[id].is_occupied = False
                 break
+
+        # remove the agent from the scheduler and the grid
+        plane.state = AirlineStates.OFF_SIMULATION
         self.schedule.remove(plane)
+        self.grid.remove_agent(plane)
 
     def get_active_planes_not_in_line(self):
         taxiing_planes = self.get_planes_in_state(AirlineStates.TAXIING_TO_STAND)
@@ -269,7 +279,7 @@ class AirportModel(Model):
         assert isinstance(results, list)
         return results
 
-    def check_planes_arriving_at_stands(self, plane):
+    def check_planes_arriving_at_stands(self):
         for id, stand in self.stands.items():
             # TODO check all planes for state changes
             for plane in self.get_active_planes_not_in_line():
