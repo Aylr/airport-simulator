@@ -144,10 +144,11 @@ class Stand(object):
 
 
 class AirportModel(Model):
-    def __init__(self, width=20, height=20, verbose=False):
+    def __init__(self, width=20, height=20, birth_rate=0.1, verbose=False):
         # TODO probability of adding plane on a tick
         super().__init__()
         self.width = width
+        self.birth_rate = birth_rate
         # This list holds the planes waiting on the tarmac for an open stand
         self.line = []
         self.max_plane_id = 0
@@ -201,11 +202,9 @@ class AirportModel(Model):
             # TODO planes queued
             # TODO queue duration
             model_reporters={
-                "number_planes": "number_planes",
                 "planes_in_line": "planes_in_line",
                 "planes_taxiing_to_stand": "planes_taxiing_to_stand",
                 "planes_at_stand": "planes_at_stand",
-                # TODO more of these stand metrics
                 "planes_served_at_stand_1": "planes_served_at_stand_1",
                 "planes_served_at_stand_2": "planes_served_at_stand_2",
                 "planes_served_at_stand_3": "planes_served_at_stand_3",
@@ -316,7 +315,7 @@ class AirportModel(Model):
     def step(self):
         self.datacollector.collect(self)
 
-        if random.random() >= 0.1:
+        if random.random() <= self.birth_rate:
             self.add_plane_to_line()
 
         self.check_planes_in_line()
