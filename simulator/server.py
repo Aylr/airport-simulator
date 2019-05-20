@@ -21,7 +21,7 @@ def agent_portrayal(agent):
         portrayal["Color"] = "green"
 
     if agent.is_at_stand:
-        portrayal["r"] = (0.75 / 30) * agent.time_at_stand
+        portrayal["r"] = (0.75 / 30) * agent.unloading_time_when_at_stand
     return portrayal
 
 
