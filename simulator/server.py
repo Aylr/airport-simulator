@@ -2,28 +2,49 @@
 from mesa.visualization.UserParam import UserSettableParameter
 from mesa.visualization.modules import CanvasGrid, ChartModule
 from mesa.visualization.ModularVisualization import ModularServer
-from simulator.model import AirportModel
+from simulator.model import AirportModel, Airline, Stand, AirlineStates
 
 
 def agent_portrayal(agent):
-    portrayal = {
-        "Shape": "circle",
-        "Filled": "true",
-        "Layer": 0,
-        "Color": "red",
-        "r": 0.75,
-        "text": agent.unique_id,
-        "text_color": "white",
-    }
+    if isinstance(agent, Airline):
+        portrayal = {
+            "Shape": "circle",
+            "Filled": "true",
+            "Layer": 0,
+            "Color": "red",
+            "r": 0.75,
+            "text": agent.unique_id,
+            "text_color": "white",
+        }
 
-    if agent.airline_type == 1:
-        portrayal["Color"] = "blue"
-    else:
-        portrayal["Color"] = "green"
+        if agent.airline_type == 1:
+            portrayal["Color"] = "blue"
+        else:
+            portrayal["Color"] = "green"
 
-    if agent.is_at_stand:
-        portrayal["r"] = (0.75 / 30) * agent.unloading_time_when_at_stand
-    return portrayal
+        if agent.state == AirlineStates.IN_LINE:
+            portrayal["text_color"] = "red"
+        elif agent.state == AirlineStates.TAXIING_TO_STAND:
+            portrayal["text_color"] = "white"
+
+        if agent.is_at_stand:
+            portrayal["r"] = (0.75 / 30) * agent.unloading_time_when_at_stand
+        return portrayal
+    elif isinstance(agent, Stand):
+        portrayal = {
+            "Shape": "circle",
+            "Layer": 0,
+            "r": 1,
+            "text": agent.unique_id,
+            "text_color": "white",
+        }
+
+        if agent.airline_type == 1:
+            portrayal["Color"] = "blue"
+        else:
+            portrayal["Color"] = "green"
+
+        return portrayal
 
 
 birth_rate = UserSettableParameter(

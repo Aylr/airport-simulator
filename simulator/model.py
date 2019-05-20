@@ -102,7 +102,9 @@ class Airline(Agent):
             self.pos, moore=False, include_center=False
         )
         # Only allow movements to empty cells to avoid collisions
-        empty_positions = [p for p in possible_steps if p in self.model.grid.empties]
+        empty_positions = [
+            p for p in possible_steps if not self.model.is_plane_in_cell(p)
+        ]
         open_stands = self.model.get_open_stands(self.airline_type)
         closest_stands = self.closest_stands(open_stands)
 
@@ -116,11 +118,13 @@ class Airline(Agent):
                     print(f"moving plane from {self.pos} to {new_position}")
                 self.model.grid.move_agent(self, new_position)
 
-class Stand(object):
+
+class Stand(Agent):
     # TODO try making stand an agent
     """An airport stand"""
 
-    def __init__(self, unique_id, airline_type, x, y):
+    def __init__(self, unique_id, airline_type, x, y, model):
+        super().__init__(unique_id, model)
         assert (
             airline_type in AIRLINE_TYPES
         ), f"Stand must be one of type {AIRLINE_TYPES}"
@@ -156,14 +160,16 @@ class AirportModel(Model):
 
         # TODO space out stands more dynamically
         self.stands = {
-            1: Stand(1, 1, 1, height - 4),
-            2: Stand(2, 1, 1, height - 6),
-            3: Stand(3, 1, 1, height - 8),
-            4: Stand(4, 2, width - 1, height - 4),
-            5: Stand(5, 2, width - 1, height - 6),
-            6: Stand(6, 2, width - 1, height - 8),
-            7: Stand(7, 2, width - 1, height - 10),
+            1: Stand(1, 1, 0, height - 4, model=self),
+            2: Stand(2, 1, 0, height - 6, model=self),
+            3: Stand(3, 1, 0, height - 8, model=self),
+            4: Stand(4, 2, width - 1, height - 4, model=self),
+            5: Stand(5, 2, width - 1, height - 6, model=self),
+            6: Stand(6, 2, width - 1, height - 8, model=self),
+            7: Stand(7, 2, width - 1, height - 10, model=self),
         }
+        for id, stand in self.stands.items():
+            self.grid.place_agent(stand, stand.position)
 
         self.datacollector = DataCollector(
             # TODO stand metrics
@@ -208,6 +214,20 @@ class AirportModel(Model):
 
     def count_planes_in_state(self, state):
         return len(self.get_planes_in_state(state))
+
+    def is_plane_in_cell(self, pos):
+        contents = self.grid.get_cell_list_contents(pos)
+        for thing in contents:
+            if isinstance(thing, Airline):
+                return True
+        return False
+
+    def is_stand_in_cell(self, pos):
+        contents = self.grid.get_cell_list_contents(pos)
+        for thing in contents:
+            if isinstance(thing, Stand):
+                return True
+        return False
 
     @property
     def planes_in_line(self):
@@ -340,18 +360,10 @@ class AirportModel(Model):
                         print(self.stands)
 
     def get_stands_of_type(self, airline_type):
-        return [
-            s
-            for id, s in self.stands.items()
-            if s.airline_type == airline_type
-        ]
+        return [s for id, s in self.stands.items() if s.airline_type == airline_type]
 
     def get_open_stands(self, airline_type):
-        return [
-            s
-            for s in self.get_stands_of_type(airline_type)
-            if not s.is_occupied
-        ]
+        return [s for s in self.get_stands_of_type(airline_type) if not s.is_occupied]
 
     def plot_positions(self):
         agent_counts = np.zeros((self.grid.width, self.grid.height))
