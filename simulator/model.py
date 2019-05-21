@@ -537,3 +537,4 @@ class AirportModel(Model):
         timestamp = datetime.strftime(datetime.now(), "%Y-%m-%d--%H-%M-%S")
         model_data.to_csv(f"{timestamp}_model_data.csv")
         agent_data.to_csv(f"{timestamp}_agent_data.csv")
+        print(f"Saved files with timestamp {timestamp}")

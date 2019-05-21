@@ -7,9 +7,13 @@ If you like this can also be dropped into a jupyter notebook.
 """
 from simulator.model import AirportModel
 
+TICKS_TO_RUN_SIMULATION = 1000
+
+print(f"Running simulation for {TICKS_TO_RUN_SIMULATION} ticks.")
+
 airport = AirportModel(width=20, height=20, verbose=False)
 
-for _ in range(1000):
+for _ in range(TICKS_TO_RUN_SIMULATION):
     airport.step()
 
 print("Simulation ended")
