@@ -59,31 +59,46 @@ maximum_stand_time = UserSettableParameter(
     "slider", "Maximum Stand Time", value=30, min_value=1, max_value=100, step=1
 )
 
-chart = ChartModule(
+type_1_ratio = UserSettableParameter(
+    "slider", "Airline Type 1 ratio", value=0.5, min_value=0, max_value=1, step=0.01
+)
+
+plane_state_chart = ChartModule(
     [
-        # {"Label": "number_of_planes_in_line", "Color": "Red"},
         {"Label": "number_of_planes_taxiing_to_stand", "Color": "Orange"},
-        # {"Label": "number_of_planes_at_stand", "Color": "Green"},
-        # {"Label": "planes_served_at_stand_1", "Color": "Green"},
-        # {"Label": "planes_served_at_stand_2", "Color": "Green"},
-        # {"Label": "planes_served_at_stand_3", "Color": "Green"},
-        # {"Label": "planes_served_at_stand_4", "Color": "Green"},
-        # {"Label": "planes_served_at_stand_5", "Color": "Green"},
-        # {"Label": "planes_served_at_stand_6", "Color": "Green"},
-        # {"Label": "planes_served_at_stand_7", "Color": "Green"},
+        {"Label": "number_of_planes_at_stand", "Color": "Red"},
     ],
+    data_collector_name="datacollector",
+)
+
+stand_landing_chart = ChartModule(
+    [
+        {"Label": "planes_served_at_stand_1", "Color": "Orange"},
+        {"Label": "planes_served_at_stand_2", "Color": "Yellow"},
+        {"Label": "planes_served_at_stand_3", "Color": "Green"},
+        {"Label": "planes_served_at_stand_4", "Color": "Blue"},
+        {"Label": "planes_served_at_stand_5", "Color": "Indigo"},
+        {"Label": "planes_served_at_stand_6", "Color": "Violet"},
+        {"Label": "planes_served_at_stand_7", "Color": "Black"},
+    ],
+    data_collector_name="datacollector",
+)
+
+planes_in_line_chart = ChartModule(
+    [{"Label": "number_of_planes_in_line", "Color": "Red"}],
     data_collector_name="datacollector",
 )
 
 grid = CanvasGrid(agent_portrayal, 20, 20, 500, 500)
 server = ModularServer(
     AirportModel,
-    [grid, chart],
+    [grid, plane_state_chart, planes_in_line_chart, stand_landing_chart],
     "Airport Model",
     {
         "width": 20,
         "height": 20,
         "birth_rate": birth_rate,
+        "type_1_ratio": type_1_ratio,
         "min_stand_time": minimum_stand_time,
         "max_stand_time": maximum_stand_time,
     },

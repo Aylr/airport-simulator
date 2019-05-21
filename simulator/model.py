@@ -35,10 +35,10 @@ class Airline(Agent):
     """
 
     def __init__(
-        self, unique_id, model, min_stand_time=20, max_stand_time=30, verbose=True
+        self, unique_id, model, airline_type, min_stand_time=20, max_stand_time=30, verbose=True
     ):
         super().__init__(unique_id, model)
-        self.airline_type = random.choice(AIRLINE_TYPES)
+        self.airline_type = airline_type
         self.state = AirlineStates.IN_LINE
 
         self.unloading_time_when_at_stand = random.randint(
@@ -232,6 +232,7 @@ class AirportModel(Model):
         width=20,
         height=20,
         birth_rate=0.1,
+        type_1_ratio=0.75,
         min_stand_time=20,
         max_stand_time=30,
         verbose=False,
@@ -239,6 +240,7 @@ class AirportModel(Model):
         super().__init__()
         self.width = width
         self.birth_rate = birth_rate
+        self.type_1_ratio = type_1_ratio
         self.min_stand_time = min_stand_time
         self.max_stand_time = max_stand_time
 
@@ -291,9 +293,15 @@ class AirportModel(Model):
 
     def add_plane_to_line(self):
         """Add a plane to the simulation and start it in line."""
+        if random.random() < self.type_1_ratio:
+            airline_type = 1
+        else:
+            airline_type = 2
+
         plane = Airline(
             unique_id=self.max_plane_id,
             model=self,
+            airline_type=airline_type,
             min_stand_time=self.min_stand_time,
             max_stand_time=self.max_stand_time,
             verbose=self.verbose,
