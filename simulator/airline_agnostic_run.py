@@ -1,5 +1,5 @@
 # run.py
-from server import server
+from simulator.agnostic_server import server
 
 server.port = 8521  # The default
 server.launch()

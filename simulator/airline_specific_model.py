@@ -259,10 +259,10 @@ class AirportModel(Model):
             1: Stand(1, 1, 0, height - 4, model=self),
             2: Stand(2, 1, 0, height - 6, model=self),
             3: Stand(3, 1, 0, height - 8, model=self),
-            4: Stand(4, 2, width - 1, height - 4, model=self),
-            5: Stand(5, 2, width - 1, height - 6, model=self),
-            6: Stand(6, 2, width - 1, height - 8, model=self),
-            7: Stand(7, 2, width - 1, height - 10, model=self),
+            4: Stand(4, 2, width - 1, height - 3, model=self),
+            5: Stand(5, 2, width - 1, height - 5, model=self),
+            6: Stand(6, 2, width - 1, height - 7, model=self),
+            7: Stand(7, 2, width - 1, height - 9, model=self),
         }
         for id, stand in self.stands.items():
             self.grid.place_agent(stand, stand.position)
@@ -529,12 +529,16 @@ class AirportModel(Model):
         # plt.legend(df.AgentID)
         plt.show()
 
+    @property
+    def model_type(self):
+        return "airline-specific"
+
     def save_data_files(self):
         """Save the model and agent datacollector dataframes as csvs."""
         model_data = self.datacollector.get_model_vars_dataframe()
         agent_data = self.datacollector.get_agent_vars_dataframe()
 
         timestamp = datetime.strftime(datetime.now(), "%Y-%m-%d--%H-%M-%S")
-        model_data.to_csv(f"{timestamp}_model_data.csv")
-        agent_data.to_csv(f"{timestamp}_agent_data.csv")
-        print(f"Saved files with timestamp {timestamp}")
+        model_data.to_csv(f"{timestamp}_{self.model_type}_model_data.csv")
+        agent_data.to_csv(f"{timestamp}_{self.model_type}_agent_data.csv")
+        print(f"Saved {self.model_type} files with timestamp {timestamp}")
