@@ -12,6 +12,14 @@
 
 ## Running
 
-- Run the example file with `python examples/airport_model_with_typed_stands.py`
+### Airline-specific models
+
+- Run the example file with `python examples/airline_specific_model.py.py`
     - Data is logged to two csvs for further analysis.
-- Run the server with `python simulator/run.py` which should open your browser
+- Run the server with `python simulator/airline_specific_run.py` which should open your browser
+
+### Airline-agnostic models
+
+- Run the example file with `python examples/airline_agnostic_model.py`
+    - Data is logged to two csvs for further analysis.
+- Run the server with `python simulator/airline_agnostic_run.py` which should open your browser

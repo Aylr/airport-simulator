@@ -2,11 +2,13 @@
 from mesa.visualization.UserParam import UserSettableParameter
 from mesa.visualization.modules import CanvasGrid, ChartModule
 from mesa.visualization.ModularVisualization import ModularServer
-from simulator.model import AirportModel, Airline, Stand, AirlineStates
+
+from simulator.agnostic_model import AgnosticAirportModel, AgnosticAirline
+from simulator.airline_specific_model import Stand, AirlineStates
 
 
 def agent_portrayal(agent):
-    if isinstance(agent, Airline):
+    if isinstance(agent, AgnosticAirline):
         portrayal = {
             "Shape": "circle",
             "Filled": "true",
@@ -91,9 +93,9 @@ planes_in_line_chart = ChartModule(
 
 grid = CanvasGrid(agent_portrayal, 20, 20, 500, 500)
 server = ModularServer(
-    AirportModel,
+    AgnosticAirportModel,
     [grid, plane_state_chart, planes_in_line_chart, stand_landing_chart],
-    "Airport Model",
+    "Airline Agnostic Airport Model",
     {
         "width": 20,
         "height": 20,
