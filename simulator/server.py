@@ -61,16 +61,16 @@ maximum_stand_time = UserSettableParameter(
 
 chart = ChartModule(
     [
-        {"Label": "planes_in_line", "Color": "Red"},
+        # {"Label": "planes_in_line", "Color": "Red"},
         {"Label": "planes_taxiing_to_stand", "Color": "Orange"},
-        {"Label": "planes_at_stand", "Color": "Green"},
-        {"Label": "planes_served_at_stand_1", "Color": "Green"},
-        {"Label": "planes_served_at_stand_2", "Color": "Green"},
-        {"Label": "planes_served_at_stand_3", "Color": "Green"},
-        {"Label": "planes_served_at_stand_4", "Color": "Green"},
-        {"Label": "planes_served_at_stand_5", "Color": "Green"},
-        {"Label": "planes_served_at_stand_6", "Color": "Green"},
-        {"Label": "planes_served_at_stand_7", "Color": "Green"},
+        # {"Label": "planes_at_stand", "Color": "Green"},
+        # {"Label": "planes_served_at_stand_1", "Color": "Green"},
+        # {"Label": "planes_served_at_stand_2", "Color": "Green"},
+        # {"Label": "planes_served_at_stand_3", "Color": "Green"},
+        # {"Label": "planes_served_at_stand_4", "Color": "Green"},
+        # {"Label": "planes_served_at_stand_5", "Color": "Green"},
+        # {"Label": "planes_served_at_stand_6", "Color": "Green"},
+        # {"Label": "planes_served_at_stand_7", "Color": "Green"},
     ],
     data_collector_name="datacollector",
 )
