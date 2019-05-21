@@ -29,12 +29,16 @@ class Airline(Agent):
     4. Vanished from the simulation.
     """
 
-    def __init__(self, unique_id, model, verbose=True):
+    def __init__(
+        self, unique_id, model, min_stand_time=20, max_stand_time=30, verbose=True
+    ):
         super().__init__(unique_id, model)
         self.airline_type = random.choice(AIRLINE_TYPES)
         self.state = AirlineStates.IN_LINE
 
-        self.unloading_time_when_at_stand = random.randint(20, 30)
+        self.unloading_time_when_at_stand = random.randint(
+            min_stand_time, max_stand_time
+        )
         self.verbose = verbose
         self.tick_count = 0
         # TODO does this need a notion of which stand it is docked at?
@@ -145,11 +149,21 @@ class Stand(Agent):
 
 
 class AirportModel(Model):
-    def __init__(self, width=20, height=20, birth_rate=0.1, verbose=False):
-        # TODO probability of adding plane on a tick
+    def __init__(
+        self,
+        width=20,
+        height=20,
+        birth_rate=0.1,
+        min_stand_time=20,
+        max_stand_time=30,
+        verbose=False,
+    ):
         super().__init__()
         self.width = width
         self.birth_rate = birth_rate
+        self.min_stand_time = min_stand_time
+        self.max_stand_time = max_stand_time
+
         # This list holds the planes waiting on the tarmac for an open stand
         self.line = []
         self.max_plane_id = 0
@@ -158,7 +172,6 @@ class AirportModel(Model):
         # TODO raise error on smallest grid
         self.grid = MultiGrid(width, height, torus=False)
 
-        # TODO space out stands more dynamically
         self.stands = {
             1: Stand(1, 1, 0, height - 4, model=self),
             2: Stand(2, 1, 0, height - 6, model=self),
@@ -199,7 +212,13 @@ class AirportModel(Model):
         )
 
     def add_plane_to_line(self):
-        plane = Airline(unique_id=self.max_plane_id, model=self, verbose=self.verbose)
+        plane = Airline(
+            unique_id=self.max_plane_id,
+            model=self,
+            min_stand_time=self.min_stand_time,
+            max_stand_time=self.max_stand_time,
+            verbose=self.verbose,
+        )
         self.max_plane_id += 1
 
         self.schedule.add(plane)

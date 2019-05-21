@@ -51,6 +51,14 @@ birth_rate = UserSettableParameter(
     "slider", "Plane Birth Rate Per Tick", value=0.5, min_value=0, max_value=1, step=0.1
 )
 
+minimum_stand_time = UserSettableParameter(
+    "slider", "Minimum Stand Time", value=20, min_value=1, max_value=100, step=1
+)
+
+maximum_stand_time = UserSettableParameter(
+    "slider", "Maximum Stand Time", value=30, min_value=1, max_value=100, step=1
+)
+
 chart = ChartModule(
     [
         {"Label": "planes_in_line", "Color": "Red"},
@@ -72,5 +80,11 @@ server = ModularServer(
     AirportModel,
     [grid, chart],
     "Airport Model",
-    {"width": 20, "height": 20, "birth_rate": birth_rate},
+    {
+        "width": 20,
+        "height": 20,
+        "birth_rate": birth_rate,
+        "min_stand_time": minimum_stand_time,
+        "max_stand_time": maximum_stand_time,
+    },
 )
