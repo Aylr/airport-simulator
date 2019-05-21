@@ -7,6 +7,7 @@
     - `pip install -r requirements.txt`
     - `pip install -r dev-requirements.txt`
     - `pip install -e ./setup.py`
+3. Verify installation with `pip list` and look for the package called `simulator 1.0.0`
 3. If you run `pytest` and see green you know installation succeeded
 
 ## Running
