@@ -41,10 +41,7 @@ def agent_portrayal(agent):
             "text_color": "white",
         }
 
-        if agent.airline_type == 1:
-            portrayal["Color"] = "blue"
-        else:
-            portrayal["Color"] = "green"
+        portrayal["Color"] = "Grey"
 
         return portrayal
 
