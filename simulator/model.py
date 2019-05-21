@@ -1,3 +1,4 @@
+from datetime import datetime
 import random
 import numpy as np
 import matplotlib.pyplot as plt
@@ -35,7 +36,13 @@ class Airline(Agent):
     """
 
     def __init__(
-        self, unique_id, model, airline_type, min_stand_time=20, max_stand_time=30, verbose=True
+        self,
+        unique_id,
+        model,
+        airline_type,
+        min_stand_time=20,
+        max_stand_time=30,
+        verbose=True,
     ):
         super().__init__(unique_id, model)
         self.airline_type = airline_type
@@ -46,7 +53,6 @@ class Airline(Agent):
         )
         self.verbose = verbose
         self.tick_count = 0
-        # TODO does this need a notion of which stand it is docked at?
 
     @property
     def x_position(self):
@@ -200,7 +206,6 @@ class Airline(Agent):
 
 
 class Stand(Agent):
-    # TODO try making stand an agent
     """An airport stand"""
 
     def __init__(self, unique_id, airline_type, x, y, model):
@@ -484,7 +489,6 @@ class AirportModel(Model):
     def check_planes_arriving_at_stands(self):
         """Check taxiing planes for state updates."""
         for id, stand in self.stands.items():
-            # TODO check all planes for state changes
             for plane in self.get_active_planes_not_in_line():
                 if plane.pos == stand.position:
                     self.stands[id].is_occupied = True
@@ -531,19 +535,11 @@ class AirportModel(Model):
         # plt.legend(df.AgentID)
         plt.show()
 
+    def save_data_files(self):
+        """Save the model and agent datacollector dataframes as csvs."""
+        model_data = self.datacollector.get_model_vars_dataframe()
+        agent_data = self.datacollector.get_agent_vars_dataframe()
 
-if __name__ == "__main__":
-    airport = AirportModel(width=20, height=20, verbose=False)
-
-    for _ in range(1000):
-        airport.step()
-
-    print("Simulation ended")
-
-    airport.plot_positions_heatmap()
-    airport.plot_position_history()
-    model_data = airport.datacollector.get_model_vars_dataframe()
-    agent_data = airport.datacollector.get_agent_vars_dataframe()
-
-    model_data.to_csv("model_data.csv")
-    agent_data.to_csv("agent_data.csv")
+        timestamp = datetime.strftime(datetime.now(), "%Y-%m-%d--%H-%M-%S")
+        model_data.to_csv(f"{timestamp}_model_data.csv")
+        agent_data.to_csv(f"{timestamp}_agent_data.csv")
