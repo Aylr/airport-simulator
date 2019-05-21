@@ -11,8 +11,6 @@ from mesa.datacollection import DataCollector
 # This constant represents the two kinds of airlines and stands
 AIRLINE_TYPES = [1, 2]
 
-# TODO make airline type enum
-
 
 class AirlineStates(object):
     """
@@ -270,10 +268,6 @@ class AirportModel(Model):
             self.grid.place_agent(stand, stand.position)
 
         self.datacollector = DataCollector(
-            # TODO stand metrics
-            # TODO planes served
-            # TODO planes queued
-            # TODO queue duration
             model_reporters={
                 "number_of_planes_in_line": "number_of_planes_in_line",
                 "number_of_planes_taxiing_to_stand": "number_of_planes_taxiing_to_stand",
