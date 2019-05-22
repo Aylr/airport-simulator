@@ -402,33 +402,36 @@ class AirportModel(Model):
         For example, if there are 3 type 1 stands, then only ever allow 3 type
         1 planes out of the line.
         """
-        # TODO this is where the model could be airline agnostic
-        # TODO subclass AirportModel and override this method
-        if len(self.line) == 0:
+        if not self.line:
             # If there is no line, skip this
             return False
 
-        result = False
+        # Check each type and release if it's ok
+        for airline_type in AIRLINE_TYPES:
+            result = self._can_planes_of_type_be_released(airline_type)
+            if result:
+                return True
 
+        return False
+
+    def _can_planes_of_type_be_released(self, airline_type):
         planes_taxiing = self.get_planes_in_state(AirlineStates.TAXIING_TO_STAND)
-        type_1_planes_taxiing = [p for p in planes_taxiing if p.airline_type == 1]
-        type_2_planes_taxiing = [p for p in planes_taxiing if p.airline_type == 2]
-
         stands = self.stands.values()
-        type_1_empty_stands = [
-            s for s in stands if s.airline_type == 1 and s.is_occupied is False
+        next_plane_type = self.line[0].airline_type
+
+        planes_taxiing = [
+            p for p in planes_taxiing if p.airline_type == airline_type
         ]
-        type_2_empty_stands = [
-            s for s in stands if s.airline_type == 2 and s.is_occupied is False
+        empty_stands = [
+            s
+            for s in stands
+            if s.airline_type == airline_type and s.is_occupied is False
         ]
 
-        type_1_ok_to_release = len(type_1_empty_stands) > len(type_1_planes_taxiing)
-        type_2_ok_to_release = len(type_2_empty_stands) > len(type_2_planes_taxiing)
-
-        if type_1_ok_to_release and type_2_ok_to_release:
-            result = True
-
-        return result
+        return (
+            len(empty_stands) > len(planes_taxiing)
+            and next_plane_type == airline_type
+        )
 
     def step(self):
         """
