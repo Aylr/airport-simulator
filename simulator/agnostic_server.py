@@ -1,4 +1,3 @@
-# server.py
 from mesa.visualization.UserParam import UserSettableParameter
 from mesa.visualization.modules import CanvasGrid, ChartModule
 from mesa.visualization.ModularVisualization import ModularServer
@@ -39,9 +38,8 @@ def agent_portrayal(agent):
             "r": 1,
             "text": agent.unique_id,
             "text_color": "white",
+            "Color": "Grey",
         }
-
-        portrayal["Color"] = "Grey"
 
         return portrayal
 
@@ -70,28 +68,29 @@ plane_state_chart = ChartModule(
     data_collector_name="datacollector",
 )
 
-stand_landing_chart = ChartModule(
-    [
-        {"Label": "planes_served_at_stand_1", "Color": "Orange"},
-        {"Label": "planes_served_at_stand_2", "Color": "Yellow"},
-        {"Label": "planes_served_at_stand_3", "Color": "Green"},
-        {"Label": "planes_served_at_stand_4", "Color": "Blue"},
-        {"Label": "planes_served_at_stand_5", "Color": "Indigo"},
-        {"Label": "planes_served_at_stand_6", "Color": "Violet"},
-        {"Label": "planes_served_at_stand_7", "Color": "Black"},
-    ],
-    data_collector_name="datacollector",
-)
-
-planes_in_line_chart = ChartModule(
-    [{"Label": "number_of_planes_in_line", "Color": "Red"}],
-    data_collector_name="datacollector",
-)
 
 grid = CanvasGrid(agent_portrayal, 20, 20, 500, 500)
+
+display_elements = [grid, plane_state_chart]
+
+for chart_details in [
+    {"Label": "number_of_planes_in_line", "Color": "Red"},
+    {"Label": "planes_served_at_stand_1", "Color": "Orange"},
+    {"Label": "planes_served_at_stand_2", "Color": "Yellow"},
+    {"Label": "planes_served_at_stand_3", "Color": "Green"},
+    {"Label": "planes_served_at_stand_4", "Color": "Blue"},
+    {"Label": "planes_served_at_stand_5", "Color": "Indigo"},
+    {"Label": "planes_served_at_stand_6", "Color": "Violet"},
+    {"Label": "planes_served_at_stand_7", "Color": "Black"},
+]:
+    display_elements.append(
+        ChartModule([chart_details], data_collector_name="datacollector")
+    )
+
+
 server = ModularServer(
     AgnosticAirportModel,
-    [grid, plane_state_chart, planes_in_line_chart, stand_landing_chart],
+    display_elements,
     "Airline Agnostic Airport Model",
     {
         "width": 20,
