@@ -1,6 +1,6 @@
 import random
 
-from simulator.airline_specific_model import Airline, AirportModel, AirlineStates
+from simulator.specific_model import Airline, AirportModel, AirlineStates
 
 
 class AgnosticAirline(Airline):
@@ -43,17 +43,15 @@ class AgnosticAirportModel(AirportModel):
             verbose=self.verbose,
         )
         self.max_plane_id += 1
-
         self.schedule.add(plane)
-        middle_x = int(self.width / 2)
-        self.grid.place_agent(plane, (middle_x, 0))
+        self.grid.place_agent(plane, (0, 0))
         self.line.append(plane)
 
     def can_first_plane_in_line_begin_taxiing(self):
         """
         Check if the first plane in line can begiun taxiing.
         """
-        if len(self.line) == 0:
+        if not self.line:
             # If there is no line, skip this
             return False
 

@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from mesa import Agent, Model
-from mesa.time import RandomActivation
+from mesa.time import BaseScheduler
 from mesa.space import MultiGrid
 from mesa.datacollection import DataCollector
 
@@ -251,7 +251,7 @@ class AirportModel(Model):
         self.line = []
         self.max_plane_id = 0
         self.verbose = verbose
-        self.schedule = RandomActivation(self)
+        self.schedule = BaseScheduler(self)
         # TODO raise error on smallest grid
         self.grid = MultiGrid(width, height, torus=False)
 
@@ -306,10 +306,8 @@ class AirportModel(Model):
             verbose=self.verbose,
         )
         self.max_plane_id += 1
-
         self.schedule.add(plane)
-        middle_x = int(self.width / 2)
-        self.grid.place_agent(plane, (middle_x, 0))
+        self.grid.place_agent(plane, (0, 0))
         self.line.append(plane)
 
     def get_planes_in_state(self, state):
@@ -404,44 +402,56 @@ class AirportModel(Model):
         For example, if there are 3 type 1 stands, then only ever allow 3 type
         1 planes out of the line.
         """
-        # TODO this is where the model could be airline agnostic
-        # TODO subclass AirportModel and override this method
-        if len(self.line) == 0:
+        if not self.line:
             # If there is no line, skip this
             return False
 
-        result = False
+        # Check each type and release if it's ok
+        for airline_type in AIRLINE_TYPES:
+            result = self._can_planes_of_type_be_released(airline_type)
+            if result:
+                return True
 
+        return False
+
+    def _can_planes_of_type_be_released(self, airline_type):
         planes_taxiing = self.get_planes_in_state(AirlineStates.TAXIING_TO_STAND)
-        type_1_planes_taxiing = [p for p in planes_taxiing if p.airline_type == 1]
-        type_2_planes_taxiing = [p for p in planes_taxiing if p.airline_type == 2]
-
         stands = self.stands.values()
-        type_1_empty_stands = [
-            s for s in stands if s.airline_type == 1 and s.is_occupied is False
+        next_plane_type = self.line[0].airline_type
+
+        planes_taxiing = [p for p in planes_taxiing if p.airline_type == airline_type]
+        empty_stands = [
+            s
+            for s in stands
+            if s.airline_type == airline_type and s.is_occupied is False
         ]
-        type_2_empty_stands = [
-            s for s in stands if s.airline_type == 2 and s.is_occupied is False
-        ]
 
-        type_1_ok_to_release = len(type_1_empty_stands) > len(type_1_planes_taxiing)
-        type_2_ok_to_release = len(type_2_empty_stands) > len(type_2_planes_taxiing)
-
-        if type_1_ok_to_release and type_2_ok_to_release:
-            result = True
-
-        return result
+        return (
+            len(empty_stands) > len(planes_taxiing) and next_plane_type == airline_type
+        )
 
     def step(self):
-        """Do all the important things during a tick like changing plane and stand states."""
-        # This is the main state machine
+        """
+        Do all the important things during a tick like changing plane and stand states.
+
+        This is the main state machine. Order of operations is very important here.
+        """
         self.datacollector.collect(self)
         if random.random() <= self.birth_rate:
             self.add_plane_to_line()
+        self.move_plane_in_front_of_line_to_starting_position()
         self.check_planes_in_line()
         self.check_planes_arriving_at_stands()
         self.check_planes_at_stands()
         self.schedule.step()
+
+    def move_plane_in_front_of_line_to_starting_position(self):
+        """move first plane in line forward 1 spot"""
+        try:
+            first_plane_in_line = self.line[0]
+            self.grid.move_agent(first_plane_in_line, (10, 0))
+        except IndexError:
+            pass
 
     def check_planes_in_line(self):
         """Release a plane from the line if it can be."""
