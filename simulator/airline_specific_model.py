@@ -306,10 +306,8 @@ class AirportModel(Model):
             verbose=self.verbose,
         )
         self.max_plane_id += 1
-
         self.schedule.add(plane)
-        middle_x = int(self.width / 2)
-        self.grid.place_agent(plane, (middle_x, 0))
+        self.grid.place_agent(plane, (0, 0))
         self.line.append(plane)
 
     def get_planes_in_state(self, state):
@@ -433,15 +431,27 @@ class AirportModel(Model):
         return result
 
     def step(self):
-        """Do all the important things during a tick like changing plane and stand states."""
-        # This is the main state machine
+        """
+        Do all the important things during a tick like changing plane and stand states.
+
+        This is the main state machine. Order of operations is very important here.
+        """
         self.datacollector.collect(self)
         if random.random() <= self.birth_rate:
             self.add_plane_to_line()
+        self.move_plane_in_front_of_line_to_starting_position()
         self.check_planes_in_line()
         self.check_planes_arriving_at_stands()
         self.check_planes_at_stands()
         self.schedule.step()
+
+    def move_plane_in_front_of_line_to_starting_position(self):
+        """move first plane in line forward 1 spot"""
+        try:
+            first_plane_in_line = self.line[0]
+            self.grid.move_agent(first_plane_in_line, (10, 0))
+        except IndexError:
+            pass
 
     def check_planes_in_line(self):
         """Release a plane from the line if it can be."""

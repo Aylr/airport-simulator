@@ -1,48 +1,56 @@
-# server.py
 from mesa.visualization.UserParam import UserSettableParameter
 from mesa.visualization.modules import CanvasGrid, ChartModule
 from mesa.visualization.ModularVisualization import ModularServer
 from simulator.airline_specific_model import AirportModel, Airline, Stand, AirlineStates
 
 
+def stand_portrayal(agent):
+    portrayal = {"Shape": "circle", "Layer": 0, "r": 1}
+    if agent.airline_type == 1:
+        portrayal["Color"] = "blue"
+    else:
+        portrayal["Color"] = "green"
+    return portrayal
+
+
+def airline_portrayal(plane):
+    portrayal = {
+        "Shape": "circle",
+        "Filled": "true",
+        "Color": "Blue" if plane.airline_type == 1 else "Green",
+        "Layer": 1,
+        "r": 0.75,
+        "text": plane.unique_id,
+        "text_color": "white",
+    }
+
+    # if plane.state == AirlineStates.TAXIING_TO_STAND:
+    #     portrayal["text"] = plane.unique_id
+    #     portrayal["r"] = 0.75
+    #     portrayal["Filled"] = "true"
+    # elif plane.state == AirlineStates.IN_LINE:
+    #     portrayal["text"] = ""
+    #     portrayal["Color"] = ""
+    #     portrayal["Filled"] = "false"
+
+    # if plane.model.line:
+    #     # If there is a line of planes
+    #     if plane.model.line[0].unique_id == plane.unique_id:
+    #         # If the plane is first in line, make it display on top
+    #         portrayal["r"] = 1
+    #         portrayal["text"] = plane.unique_id
+    #         portrayal["Color"] = "Blue" if plane.airline_type == 1 else "Green"
+    #         portrayal["Filled"] = "true"
+    #         portrayal["Layer"] = 10
+
+    return portrayal
+
+
 def agent_portrayal(agent):
     if isinstance(agent, Airline):
-        portrayal = {
-            "Shape": "circle",
-            "Filled": "true",
-            "Layer": 0,
-            "Color": "red",
-            "r": 0.75,
-            "text": agent.unique_id,
-            "text_color": "white",
-        }
-
-        if agent.airline_type == 1:
-            portrayal["Color"] = "blue"
-        else:
-            portrayal["Color"] = "green"
-
-        if agent.state == AirlineStates.IN_LINE:
-            portrayal["text_color"] = "red"
-            portrayal["layer"] = 0
-        elif agent.state == AirlineStates.TAXIING_TO_STAND:
-            portrayal["text_color"] = "white"
-            portrayal["layer"] = 1
-
-        return portrayal
+        return airline_portrayal(agent)
     elif isinstance(agent, Stand):
-        portrayal = {
-            "Shape": "circle",
-            "Layer": 0,
-            "r": 1,
-        }
-
-        if agent.airline_type == 1:
-            portrayal["Color"] = "blue"
-        else:
-            portrayal["Color"] = "green"
-
-        return portrayal
+        return stand_portrayal(agent)
 
 
 birth_rate = UserSettableParameter(

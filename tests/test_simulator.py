@@ -17,6 +17,7 @@ def test_default_airport_model():
     assert airport.line == []
     assert airport.max_plane_id == 0
     assert len(airport.stands) == 7
+    assert airport.model_type == "airline-specific"
 
 
 def test_default_agnostic_airline():
@@ -32,3 +33,4 @@ def test_default_agnostic_airport_model():
     assert airport.line == []
     assert airport.max_plane_id == 0
     assert len(airport.stands) == 7
+    assert airport.model_type == "airline-agnostic"

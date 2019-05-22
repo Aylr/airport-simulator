@@ -5,7 +5,7 @@ Run it with `python airport_model_with_typed_stands.py`
 
 If you like this can also be dropped into a jupyter notebook.
 """
-from simulator.model import AirportModel
+from simulator.airline_specific_model import AirportModel
 
 TICKS_TO_RUN_SIMULATION = 1000
 

@@ -32,12 +32,7 @@ def agent_portrayal(agent):
 
         return portrayal
     elif isinstance(agent, Stand):
-        portrayal = {
-            "Shape": "circle",
-            "Layer": 0,
-            "r": 1,
-            "Color": "Grey",
-        }
+        portrayal = {"Shape": "circle", "Layer": 0, "r": 1, "Color": "Grey"}
 
         return portrayal
 
