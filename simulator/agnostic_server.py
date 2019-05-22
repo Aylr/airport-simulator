@@ -25,19 +25,17 @@ def agent_portrayal(agent):
 
         if agent.state == AirlineStates.IN_LINE:
             portrayal["text_color"] = "red"
+            portrayal["layer"] = 0
         elif agent.state == AirlineStates.TAXIING_TO_STAND:
             portrayal["text_color"] = "white"
+            portrayal["layer"] = 1
 
-        if agent.is_at_stand:
-            portrayal["r"] = (0.75 / 30) * agent.unloading_time_when_at_stand
         return portrayal
     elif isinstance(agent, Stand):
         portrayal = {
             "Shape": "circle",
             "Layer": 0,
             "r": 1,
-            "text": agent.unique_id,
-            "text_color": "white",
             "Color": "Grey",
         }
 

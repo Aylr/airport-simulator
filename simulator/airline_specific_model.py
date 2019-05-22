@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from mesa import Agent, Model
-from mesa.time import RandomActivation
+from mesa.time import BaseScheduler
 from mesa.space import MultiGrid
 from mesa.datacollection import DataCollector
 
@@ -251,7 +251,7 @@ class AirportModel(Model):
         self.line = []
         self.max_plane_id = 0
         self.verbose = verbose
-        self.schedule = RandomActivation(self)
+        self.schedule = BaseScheduler(self)
         # TODO raise error on smallest grid
         self.grid = MultiGrid(width, height, torus=False)
 
