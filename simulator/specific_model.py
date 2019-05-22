@@ -419,9 +419,7 @@ class AirportModel(Model):
         stands = self.stands.values()
         next_plane_type = self.line[0].airline_type
 
-        planes_taxiing = [
-            p for p in planes_taxiing if p.airline_type == airline_type
-        ]
+        planes_taxiing = [p for p in planes_taxiing if p.airline_type == airline_type]
         empty_stands = [
             s
             for s in stands
@@ -429,8 +427,7 @@ class AirportModel(Model):
         ]
 
         return (
-            len(empty_stands) > len(planes_taxiing)
-            and next_plane_type == airline_type
+            len(empty_stands) > len(planes_taxiing) and next_plane_type == airline_type
         )
 
     def step(self):

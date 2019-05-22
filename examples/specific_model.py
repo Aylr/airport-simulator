@@ -1,11 +1,11 @@
 """
 This is an Airport model with typed stands
 
-Run it with `python airport_model_with_typed_stands.py`
+Run it with `python specific_model.py`
 
 If you like this can also be dropped into a jupyter notebook.
 """
-from simulator.airline_specific_model import AirportModel
+from simulator.specific_model import AirportModel
 
 TICKS_TO_RUN_SIMULATION = 1000
 

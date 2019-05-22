@@ -1,6 +1,6 @@
 import pytest
 
-from simulator.airline_specific_model import Airline, AirlineStates, AirportModel
+from simulator.specific_model import Airline, AirlineStates, AirportModel
 from simulator.agnostic_model import AgnosticAirline, AgnosticAirportModel
 
 

@@ -42,12 +42,12 @@ help: ## Get help messages
 	@python -c "$$PRINT_HELP_PYSCRIPT" < $(MAKEFILE_LIST)
 
 github: ## Open the GitHub repo for this project
-	open https://github.com
+	open https://github.com/Aylr/airport-simulator
 
 install: ## update your python environment
 	pip install -r requirements.txt || true
 	pip install -r dev-requirements.txt || true
-	pip install -e . || true
+	pip install -e ./ || true
 	pip list
 
 test: ## Run tests
@@ -81,9 +81,6 @@ dist: clean ## Builds source and wheel package
 	python setup.py sdist
 	python setup.py bdist_wheel
 	ls -l dist
-
-release: dist ## Package and upload a release to Gemfury
-	python setup.py sdist upload -r fury
 
 venv: ## Create a new virtualenv in the repo root
 	rm -rf venv || true

@@ -1,40 +1,45 @@
 from mesa.visualization.UserParam import UserSettableParameter
 from mesa.visualization.modules import CanvasGrid, ChartModule
 from mesa.visualization.ModularVisualization import ModularServer
+from simulator.specific_model import Airline, Stand, AirlineStates
 
-from simulator.agnostic_model import AgnosticAirportModel, AgnosticAirline
-from simulator.airline_specific_model import Stand, AirlineStates
+
+def stand_portrayal(agent):
+    portrayal = {"Shape": "circle", "Layer": 0, "r": 1}
+    if agent.airline_type == 1:
+        portrayal["Color"] = "blue"
+    else:
+        portrayal["Color"] = "green"
+    return portrayal
+
+
+def airline_portrayal(plane):
+    portrayal = {
+        "Shape": "circle",
+        "Filled": "true",
+        "Color": "Blue" if plane.airline_type == 1 else "Green",
+        "Layer": 1,
+        "r": 0.75,
+        "text": plane.unique_id,
+        "text_color": "white",
+    }
+
+    if (
+        plane.state == AirlineStates.IN_LINE
+        and plane.x_position == 0
+        and plane.y_position == 0
+    ):
+        # Hide the planes that pile up in the line spot (0, 0)
+        portrayal["Color"] = "White"
+
+    return portrayal
 
 
 def agent_portrayal(agent):
-    if isinstance(agent, AgnosticAirline):
-        portrayal = {
-            "Shape": "circle",
-            "Filled": "true",
-            "Layer": 0,
-            "Color": "red",
-            "r": 0.75,
-            "text": agent.unique_id,
-            "text_color": "white",
-        }
-
-        if agent.airline_type == 1:
-            portrayal["Color"] = "blue"
-        else:
-            portrayal["Color"] = "green"
-
-        if agent.state == AirlineStates.IN_LINE:
-            portrayal["text_color"] = "red"
-            portrayal["layer"] = 0
-        elif agent.state == AirlineStates.TAXIING_TO_STAND:
-            portrayal["text_color"] = "white"
-            portrayal["layer"] = 1
-
-        return portrayal
+    if isinstance(agent, Airline):
+        return airline_portrayal(agent)
     elif isinstance(agent, Stand):
-        portrayal = {"Shape": "circle", "Layer": 0, "r": 1, "Color": "Grey"}
-
-        return portrayal
+        return stand_portrayal(agent)
 
 
 birth_rate = UserSettableParameter(
@@ -81,16 +86,17 @@ for chart_details in [
     )
 
 
-server = ModularServer(
-    AgnosticAirportModel,
-    display_elements,
-    "Airline Agnostic Airport Model",
-    {
-        "width": 20,
-        "height": 20,
-        "birth_rate": birth_rate,
-        "type_1_ratio": type_1_ratio,
-        "min_stand_time": minimum_stand_time,
-        "max_stand_time": maximum_stand_time,
-    },
-)
+def build_server(title, model):
+    return ModularServer(
+        model,
+        display_elements,
+        title,
+        {
+            "width": 20,
+            "height": 20,
+            "birth_rate": birth_rate,
+            "type_1_ratio": type_1_ratio,
+            "min_stand_time": minimum_stand_time,
+            "max_stand_time": maximum_stand_time,
+        },
+    )

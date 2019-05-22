@@ -8,8 +8,8 @@ with open("README.md", "r") as fh:
 setup(
     name="simulator",
     packages=["simulator"],
-    version="1.1.0",
-    description="Airline simulator for saving the earth.",
+    version="1.2.0",
+    description="Airline simulator for saving the earth by decreasing wasted jet fuel with suboptimal stand loading.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     author="Taylor Miller",
